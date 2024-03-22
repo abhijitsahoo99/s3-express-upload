@@ -4,13 +4,13 @@
   "description": " A server for abstracting AWS S3 Storage and allowing authenticated requests",
   "main": "src/index.ts",
   "scripts": {
+    "postinstall": "ts-node src/lib/generate-token.ts",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/src/index.js",
     "lint": "eslint --fix src test",
     "test": "jest",
-    "typecheck": "tsc --noEmit",
-    "generate-token": "ts-node src/lib/generate-token.ts"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "Kunal Bagaria <hi@kunalbagaria.com> (https://kunalbagaria.com)",

@@ -1,4 +1,3 @@
-// generate-token.ts
 import { randomBytes } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
@@ -7,19 +6,41 @@ const generateToken = (length: number = 64): string => {
   return randomBytes(length / 2).toString('hex');
 };
 
+const envVariables = [
+  'AWS_REGION=""',
+  'AWS_BUCKET=""',
+  'AWS_ACCESS_KEY_ID=""',
+  'AWS_SECRET_ACCESS_KEY=""',
+  'CLOUDFRONT_DOMAIN=""',
+  // 'API_TOKEN=""', // This will be handled separately to include the generated token.
+  'SERVER_URL=""',
+];
+
 const updateEnvFile = async (token: string): Promise<void> => {
   const envPath = path.join(process.cwd(), '.env');
-  let content;
+  let content: string; // Explicitly declare content as a string.
   try {
     content = await fs.readFile(envPath, { encoding: 'utf-8' });
   } catch (err) {
     content = ''; // File does not exist, will create
   }
-  const updatedContent = content.includes('API_TOKEN=')
-    ? content.replace(/API_TOKEN=.*/, `API_TOKEN="${token}"`)
-    : `${content}\nAPI_TOKEN="${token}"\n`;
-    // eslint-disable-next-line @typescript-eslint/indent
-    await fs.writeFile(envPath, updatedContent, { encoding: 'utf-8' });
+
+  // Ensure all environment variables are present, adding any that are missing.
+  envVariables.forEach(variable => {
+    const [key] = variable.split('=');
+    if (!content.includes(`${key}=`)) {
+      content += `${variable}\n`;
+    }
+  });
+
+  // Handle API_TOKEN separately to add the generated token.
+  if (content.includes('API_TOKEN=')) {
+    content = content.replace(/API_TOKEN=".*"/, `API_TOKEN="${token}"`);
+  } else {
+    content += `API_TOKEN="${token}"\n`;
+  }
+
+  await fs.writeFile(envPath, content, { encoding: 'utf-8' });
 };
 
 const main = async () => {
