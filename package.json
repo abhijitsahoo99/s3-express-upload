@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "postinstall": "ts-node src/lib/generate-token.ts",
+    "setup-aws": "ts-node src/lib/aws-credentials.ts",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/src/index.js",
