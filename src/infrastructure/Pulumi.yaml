@@ -1,0 +1,7 @@
+name: pulumi-automation
+runtime: nodejs
+description: A minimal AWS TypeScript Pulumi program to automatically create s3 buckets and cloudfront distribution and update in .env file
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript
