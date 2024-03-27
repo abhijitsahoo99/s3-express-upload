@@ -10,7 +10,7 @@ const rl = readline.createInterface({
 
 const askQuestion = (query: string): Promise<string> => new Promise((resolve) => rl.question(query, resolve));
 
-const updateEnvFile = async (awsAccessKeyId: string, awsSecretAccessKey: string): Promise<void> => {
+const updateEnvFile = async (awsRegion:string, awsAccessKeyId: string, awsSecretAccessKey: string): Promise<void> => {
   const envPath = path.join(process.cwd(), '.env');
   let content: string;
   try {
@@ -23,6 +23,7 @@ const updateEnvFile = async (awsAccessKeyId: string, awsSecretAccessKey: string)
   const replacements: { [key: string]: string } = {
     'AWS_ACCESS_KEY_ID': awsAccessKeyId,
     'AWS_SECRET_ACCESS_KEY': awsSecretAccessKey,
+    'AWS_REGION' : awsRegion,
   };
 
   Object.keys(replacements).forEach(key => {
@@ -40,9 +41,10 @@ const updateEnvFile = async (awsAccessKeyId: string, awsSecretAccessKey: string)
 };
 
 const main = async () => {
+  const awsRegion = await askQuestion('Please provide the value of AWS_REGION: ');
   const awsAccessKeyId = await askQuestion('Please provide the value of AWS_ACCESS_KEY_ID: ');
   const awsSecretAccessKey = await askQuestion('Please provide the value of AWS_SECRET_ACCESS_KEY: ');
-  await updateEnvFile(awsAccessKeyId, awsSecretAccessKey);
+  await updateEnvFile(awsRegion, awsAccessKeyId, awsSecretAccessKey);
   console.log('AWS credentials updated in .env file.');
 };
 

@@ -3,9 +3,16 @@ import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as fs from 'fs';
 import * as path from 'path';
+// Import dotenv to load environment variables from the .env file
+// eslint-disable-next-line import/no-extraneous-dependencies
+import * as dotenv from 'dotenv';
 
+// Correctly load the .env file from the project root directory
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-// Define an S3 bucket using the AWS region from your centralized configuration
+console.log('Using .env at', path.resolve(__dirname, '../../.env'));
+
+// Define an S3 bucket
 const bucket = new aws.s3.Bucket('myBucket', {
   website: {
     indexDocument: 'index.html',
@@ -16,7 +23,7 @@ const originAccessIdentity = new aws.cloudfront.OriginAccessIdentity('myOAI', {
   comment: 'Origin Access Identity created by Pulumi',
 });
 
-// Then, use the created Origin Access Identity in your Distribution
+// Use the created Origin Access Identity in your Distribution
 const distribution = new aws.cloudfront.Distribution('myDistribution', {
   origins: [{
     domainName: bucket.bucketRegionalDomainName,
@@ -46,28 +53,36 @@ const distribution = new aws.cloudfront.Distribution('myDistribution', {
   },
 });
 
-// Output  bucket name, and CloudFront domain from the config
+// Output bucket name and CloudFront domain
 export const bucketName = bucket.id;
 export const cloudFrontDomain = distribution.domainName;
+
 // Function to update the .env file
 function updateEnv(values: { [key: string]: string }) {
-  const envPath = path.join(__dirname, '.env');
+  const envPath = path.resolve(__dirname, '../../.env');
+  console.log('Updating .env at', envPath);
   let envContent = '';
 
   if (fs.existsSync(envPath)) {
-    envContent = fs.readFileSync(envPath, { encoding: 'utf8' });
+    envContent = fs.readFileSync(envPath, 'utf8');
+  } else {
+    console.warn('.env file does not exist at expected path:', envPath);
+    return;
   }
 
   Object.keys(values).forEach(key => {
+    // Change here: Include double quotes around the value
+    const newValue = `"${values[key]}"`; // <-- Change made here
     const regex = new RegExp(`^${key}=.*`, 'm');
     if (envContent.match(regex)) {
-      envContent = envContent.replace(regex, `${key}=${values[key]}`);
+      envContent = envContent.replace(regex, `${key}=${newValue}`);
     } else {
-      envContent += `\n${key}=${values[key]}`;
+      envContent += `\n${key}=${newValue}`;
     }
   });
 
-  fs.writeFileSync(envPath, envContent);
+  fs.writeFileSync(envPath, envContent.trim() + '\n');
+  console.log('Successfully updated .env file');
 }
 
 // Use `apply` to ensure the values are resolved before attempting to write to the .env file
