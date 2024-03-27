@@ -1,4 +1,4 @@
-import app from './lib/app';
+import app  from './lib/app';
 import { config } from './lib/config';
 import { validateAllEnvVars } from './lib/config';
 import { generateQRCode } from './lib/qr-code';

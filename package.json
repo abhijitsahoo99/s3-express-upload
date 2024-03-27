@@ -4,8 +4,7 @@
   "description": " A server for abstracting AWS S3 Storage and allowing authenticated requests",
   "main": "src/index.ts",
   "scripts": {
-    "postinstall": "ts-node src/lib/generate-token.ts",
-    "setup-aws": "ts-node src/lib/aws-credentials.ts",
+    "setup" : "bun setup.ts",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/src/index.js",
