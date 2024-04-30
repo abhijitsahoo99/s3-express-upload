@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import path from 'path';
+import deploy from './src/infrastructure';
 
 /**
  * Executes a given command interactively, allowing for user input.
@@ -24,17 +24,15 @@ function runCommandInteractive(command: string, args: string[] = [], options: Re
 async function setup() {
   // Step 1: Generate API token and update .env file
   console.log('Step 1: Generating API Token and updating .env file...');
-  await runCommandInteractive('bun', ['./src/lib/generate-token.ts']);
+  await runCommandInteractive('bun', ['./src/infrastructure/generate-token.ts']);
 
   // Step 2: Prompt user for AWS credentials and update .env file
   console.log('Step 2: Setting up AWS credentials...');
-  await runCommandInteractive('bun', ['./src/lib/aws-credentials.ts']);
+  await runCommandInteractive('bun', ['./src/infrastructure/aws-credentials.ts']);
 
-  // Step 3: Navigate to src/infrastructure and run Pulumi commands
-  console.log('Step 3: Setting up infrastructure with Pulumi...');
-  const infrastructurePath = path.join(process.cwd(), 'src', 'infrastructure');
-  // await runCommandInteractive('pulumi', ['refresh', '--yes'], { cwd: infrastructurePath });
-  await runCommandInteractive('pulumi', ['up', '--yes'], { cwd: infrastructurePath });
+  // Step 3: Run aws-cdk to create infrastructure
+  console.log('Step 3: Setting up infrastructure with AWS...');
+  await deploy();
 
   console.log('Setup complete!');
 }
