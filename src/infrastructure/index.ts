@@ -1,4 +1,5 @@
 import * as AWS from 'aws-sdk';
+import * as crypto from 'crypto';
 import { App } from '@aws-cdk/core';
 import { MyStack } from './stack';
 import { writeFileSync, readFileSync } from 'fs';
@@ -8,13 +9,15 @@ AWS.config.update({ region: 'us-east-1' });
 const cloudformation = new AWS.CloudFormation();
 const app = new App();
 
+const stackName = `pix-stack-${crypto.randomBytes(16).toString('hex')}`;
+
 function synthesizeCdkTemplate(): string {
   // Instantiate your CDK stack
-  new MyStack(app, 'pix-stack');
+  new MyStack(app, stackName);
 
   // Synthesize the CDK app to CloudFormation template
   const assembly = app.synth();
-  const template = assembly.getStackByName('pix-stack').template;
+  const template = assembly.getStackByName(stackName).template;
 
   // Save the template to a JSON file and return its path
   const templatePath = './cdk-output.json';
@@ -26,28 +29,41 @@ async function deployStack(templatePath: string) {
   const templateBody = readFileSync(templatePath, 'utf8');
 
   const params = {
-    StackName: 'pix-stack',
+    StackName: stackName,
     TemplateBody: templateBody,
     Capabilities: ['CAPABILITY_NAMED_IAM'],
   };
 
   try {
+    console.log('Creating a new stack...');
     await cloudformation.createStack(params).promise();
-    await cloudformation.waitFor('stackCreateComplete', { StackName: 'pix-stack' }).promise();
+    console.log('Stack creation initiated. It may take a few minutes to complete.');
+    await cloudformation.waitFor('stackCreateComplete', { StackName: stackName }).promise();
+  } catch (e) {
+    console.error('Failed to create the stack:', e);
+    return;
+  }
 
-    const { Stacks } = await cloudformation.describeStacks({ StackName: 'pix-stack' }).promise();
+  try {
+    const { Stacks } = await cloudformation.describeStacks({ StackName: stackName }).promise();
     if (!Stacks || Stacks.length === 0) {
-      throw new Error('No stacks found.');
+      throw new Error('Stack creation failed.');
     }
+
     const outputs = Stacks[0].Outputs;
+    console.log(outputs);
     if (!outputs) {
       throw new Error('No outputs found in the CloudFormation stack.');
     }
+
     const distributionUrl = outputs.find(o => o.OutputKey === 'DistributionURL')?.OutputValue;
+    const bucketName = outputs.find(o => o.OutputKey === 'BucketName')?.OutputValue;
+
     // Write distribution URL to the env file
-    const envContent = `CLOUDFRONT_URL=${distributionUrl}\n`;
+    const envContent = `CLOUDFRONT_URL=${distributionUrl}\nAWS_BUCKET=${bucketName}`;
     writeFileSync('.env', envContent);
     console.log('Environment file updated with CloudFront URL.');
+
   } catch (error) {
     console.error('Failed to deploy the stack:', error);
   }

@@ -8,11 +8,8 @@ const generateToken = (length: number = 64): string => {
 
 const envVariables = [
   'AWS_REGION=""',
-  'AWS_BUCKET=""',
   'AWS_ACCESS_KEY_ID=""',
   'AWS_SECRET_ACCESS_KEY=""',
-  // 'API_TOKEN=""', // This will be handled separately to include the generated token.
-  'SERVER_URL=""',
 ];
 
 const updateEnvFile = async (token: string): Promise<void> => {

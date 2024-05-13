@@ -2,6 +2,7 @@
 import fs from "fs/promises";
 import readline from "readline";
 import path from "path";
+import dotenv from "dotenv";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,8 +15,7 @@ const askQuestion = (query: string): Promise<string> =>
 const updateEnvFile = async (
   awsRegion: string,
   awsAccessKeyId: string,
-  awsSecretAccessKey: string,
-  awsBucketName: string
+  awsSecretAccessKey: string
 ): Promise<void> => {
   const envPath = path.join(process.cwd(), ".env");
   let content: string;
@@ -47,13 +47,19 @@ const updateEnvFile = async (
 };
 
 const main = async () => {
+  dotenv.config();
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    console.log("AWS credentials already set in .env file.");
+    rl.close();
+    return;
+  }
   const awsAccessKeyId = await askQuestion(
     "Please provide the value of AWS_ACCESS_KEY_ID: "
   );
   const awsSecretAccessKey = await askQuestion(
     "Please provide the value of AWS_SECRET_ACCESS_KEY: "
   );
-  await updateEnvFile("us-east-1", awsAccessKeyId, awsSecretAccessKey, "pix-cloud-storage");
+  await updateEnvFile("us-east-1", awsAccessKeyId, awsSecretAccessKey);
   console.log("AWS credentials updated in .env file.");
 };
 

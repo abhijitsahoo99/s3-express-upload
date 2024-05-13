@@ -28,5 +28,18 @@ export class MyStack extends cdk.Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
     });
+
+    // Output the S3 bucket name
+    new cdk.CfnOutput(this, 'BucketName', {
+      value: bucket.bucketName,
+      description: 'The name of the S3 bucket',
+    });
+
+    // Output the CloudFront distribution URL
+    new cdk.CfnOutput(this, 'DistributionURL', {
+      value: distribution.distributionDomainName,
+      description: 'The URL of the CloudFront distribution',
+    });
+
   }
 }
