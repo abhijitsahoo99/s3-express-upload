@@ -59,11 +59,13 @@ async function deployStack(templatePath: string) {
     const distributionUrl = outputs.find(o => o.OutputKey === 'DistributionURL')?.OutputValue;
     const bucketName = outputs.find(o => o.OutputKey === 'BucketName')?.OutputValue;
 
+    // Read the existing env file
+    const envFileData = readFileSync('.env', 'utf8');
     // Write distribution URL to the env file
-    const envContent = `CLOUDFRONT_URL=${distributionUrl}\nAWS_BUCKET=${bucketName}`;
+    const envContent = envFileData + `CLOUDFRONT_URL=${distributionUrl}\nAWS_BUCKET=${bucketName}`;
     writeFileSync('.env', envContent);
-    console.log('Environment file updated with CloudFront URL.');
 
+    console.log('Environment file updated with CloudFront URL.');
   } catch (error) {
     console.error('Failed to deploy the stack:', error);
   }
