@@ -62,7 +62,7 @@ async function deployStack(templatePath: string) {
     // Read the existing env file
     const envFileData = readFileSync('.env', 'utf8');
     // Write distribution URL to the env file
-    const envContent = envFileData + '\n' + `CLOUDFRONT_URL=${distributionUrl}\nAWS_BUCKET=${bucketName}`;
+    const envContent = envFileData + '\n' + `CLOUDFRONT_DOMAIN=${distributionUrl}\nAWS_BUCKET=${bucketName}`;
     writeFileSync('.env', envContent);
 
     console.log('Environment file updated with CloudFront URL.');
